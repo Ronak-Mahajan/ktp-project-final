@@ -1,0 +1,15 @@
+# Requirements for Statistical Arbitrage Bot
+# Install with: pip install -r requirements.txt
+
+# Core dependencies
+requests>=2.28.0
+pandas>=1.5.0
+scipy>=1.10.0
+matplotlib>=3.5.0
+python-dateutil>=2.8.0
+pytz>=2022.1
+
+# Kalshi API client (requires cryptography for authentication)
+kalshi-python>=1.0.0
+cryptography>=3.4.8
+
