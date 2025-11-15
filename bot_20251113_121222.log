@@ -1,2 +1,0 @@
-2025-11-13 12:12:22,878 - INFO - Logging to bot_20251113_121222.log
-2025-11-13 12:12:22,878 - ERROR - ERROR: model.json not found! Please run the `find_our_model.ipynb` notebook first.
