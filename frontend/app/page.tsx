@@ -1,5 +1,5 @@
 import DashboardPageLayout from "@/components/dashboard/layout";
-import DashboardChart from "@/components/dashboard/chart";
+import CorrelationCharts from "@/components/dashboard/correlation-charts";
 import BracketsIcon from "@/components/icons/brackets";
 
 export default function DashboardOverview() {
@@ -11,19 +11,7 @@ export default function DashboardOverview() {
         icon: BracketsIcon,
       }}
     >
-      <div className="grid gap-6">
-        <div className="rounded-lg border-2 border-border bg-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Correlation Analysis</h2>
-          <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-border rounded-md">
-            <p className="text-muted-foreground">Correlation graph will be displayed here</p>
-          </div>
-        </div>
-        
-        <div className="rounded-lg border-2 border-border bg-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Time Series Data</h2>
-          <DashboardChart />
-        </div>
-      </div>
+      <CorrelationCharts />
     </DashboardPageLayout>
   );
 }
