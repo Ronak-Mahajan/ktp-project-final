@@ -73,15 +73,36 @@ export default function CorrelationCharts() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${API_BASE_URL}/api/v1/correlation`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
+        
+        // Check if API URL is configured
+        if (!API_BASE_URL) {
+          throw new Error("API URL is not configured. Please set NEXT_PUBLIC_API_URL environment variable.");
         }
+        
+        const url = `${API_BASE_URL}/api/v1/correlation`;
+        console.log("Fetching from:", url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API Error Response:", errorText);
+          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}. ${errorText}`);
+        }
+        
         const result = await response.json();
+        console.log("Data fetched successfully:", result);
         setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch correlation data");
+        const errorMessage = err instanceof Error ? err.message : "Failed to fetch correlation data";
+        setError(errorMessage);
         console.error("Error fetching correlation data:", err);
+        console.error("API_BASE_URL:", API_BASE_URL);
       } finally {
         setLoading(false);
       }
@@ -106,9 +127,13 @@ export default function CorrelationCharts() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="text-center">
-          <p className="text-destructive mb-2">Error loading data</p>
-          <p className="text-sm text-muted-foreground">{error}</p>
+        <div className="text-center max-w-md">
+          <p className="text-destructive mb-2 font-semibold">Error loading data</p>
+          <p className="text-sm text-muted-foreground mb-4">{error}</p>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>API URL: {API_BASE_URL || "Not configured"}</p>
+            <p>Check browser console for more details</p>
+          </div>
         </div>
       </div>
     );
