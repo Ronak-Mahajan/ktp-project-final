@@ -12,15 +12,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 // Get API URL from environment variable, with fallback for local development
 const getApiUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+  // In browser/client-side, use the environment variable
+  if (typeof window !== 'undefined') {
+    // Check if NEXT_PUBLIC_API_URL is set (available at build time)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (apiUrl) {
+      // Remove trailing slash if present
+      return apiUrl.replace(/\/$/, '');
+    }
+    // Fallback to localhost for local development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8000';
+    }
   }
-  // Fallback to localhost for local development
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return 'http://localhost:8000';
-  }
-  // In production without env var, try to infer from current host
-  return '';
+  // Server-side or no env var
+  return process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
 };
 
 const API_BASE_URL = getApiUrl();
@@ -79,8 +85,12 @@ export default function CorrelationCharts() {
           throw new Error("API URL is not configured. Please set NEXT_PUBLIC_API_URL environment variable.");
         }
         
-        const url = `${API_BASE_URL}/api/v1/correlation`;
+        // Ensure no double slashes
+        const baseUrl = API_BASE_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/api/v1/correlation`;
         console.log("Fetching from:", url);
+        console.log("API_BASE_URL value:", API_BASE_URL);
+        console.log("NEXT_PUBLIC_API_URL env:", process.env.NEXT_PUBLIC_API_URL);
         
         const response = await fetch(url, {
           method: 'GET',
@@ -90,9 +100,20 @@ export default function CorrelationCharts() {
         });
         
         if (!response.ok) {
-          const errorText = await response.text();
+          const contentType = response.headers.get("content-type");
+          let errorText = '';
+          
+          // Check if response is HTML (likely a 404 page from frontend)
+          if (contentType && contentType.includes("text/html")) {
+            errorText = `Received HTML instead of JSON. This usually means the API URL is incorrect or the request is hitting the frontend instead of the backend. Check that NEXT_PUBLIC_API_URL is set correctly in Vercel.`;
+            console.error("Received HTML response - API URL might be wrong");
+            console.error("Response URL:", response.url);
+          } else {
+            errorText = await response.text();
+          }
+          
           console.error("API Error Response:", errorText);
-          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}. ${errorText}`);
+          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}. ${errorText.substring(0, 200)}`);
         }
         
         const result = await response.json();
